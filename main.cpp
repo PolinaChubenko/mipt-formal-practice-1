@@ -11,8 +11,12 @@ private:
     std::string expression_in_rpn;
     std::string expression;
     std::set<char> alphabet = {'1', '.', '+', '*'};
+    const int64_t infinity = 1e5;
 private:
     bool isSymbolInAlphabet(char);
+    static void parseOperationWithValenceOne(std::string&, std::stack<std::string>&);
+    static void parseOperationWithValenceTwo(std::string&, std::stack<std::string>&);
+    void normaliseExpression();
 public:
     RegularExpression();
     explicit RegularExpression(const std::set<char>&);
@@ -21,12 +25,57 @@ public:
     friend std::istream& operator >> (std::istream&, RegularExpression&);
     friend std::ostream& operator << (std::ostream&, const RegularExpression&);
 
-    void parseExpression();
     int64_t findMaxPrefix(char);
 };
 
 bool RegularExpression::isSymbolInAlphabet(char symbol) {
     return alphabet.find(symbol) != alphabet.end();
+}
+
+void RegularExpression::parseOperationWithValenceOne(std::string &operation,
+                                                            std::stack<std::string> &unprocessed_elements) {
+    std::string operand = unprocessed_elements.top();
+    unprocessed_elements.pop();
+    if (operand.size() == 1 || operand[0] == '(') {
+        unprocessed_elements.push(operand + operation);
+    } else {
+        unprocessed_elements.push('(' + operand + ')' + operation);
+    }
+}
+
+void RegularExpression::parseOperationWithValenceTwo(std::string &operation,
+                                                            std::stack<std::string> &unprocessed_elements) {
+    std::string right_operand = unprocessed_elements.top();
+    unprocessed_elements.pop();
+    std::string left_operand = unprocessed_elements.top();
+    unprocessed_elements.pop();
+    if (operation == "+") {
+        unprocessed_elements.push("(" + left_operand + operation + right_operand + ")");
+    }
+    else {
+        unprocessed_elements.push(left_operand + right_operand);
+    }
+}
+
+void RegularExpression::normaliseExpression() {
+    std::stack<std::string> unprocessed_elements;
+    for (char symbol : expression_in_rpn) {
+        if (isalpha(symbol)) {
+            unprocessed_elements.push(std::string(1, symbol));
+        } else {
+            int32_t operator_valence = (symbol == '*') ? 1 : 2;
+            std::string operation = std::string(1, symbol);
+            if (operator_valence == 1) {
+                if (unprocessed_elements.empty()) throw std::out_of_range("Expression has incorrect operation");
+                parseOperationWithValenceOne(operation, unprocessed_elements);
+            } else {
+                if (unprocessed_elements.size() < 2) throw std::out_of_range("Expression has incorrect operation");
+                parseOperationWithValenceTwo(operation, unprocessed_elements);
+            }
+        }
+    }
+    if (unprocessed_elements.size() > 1) throw std::out_of_range("Expression is incorrect");
+    expression = unprocessed_elements.top();
 }
 
 RegularExpression::RegularExpression() {
@@ -39,6 +88,7 @@ RegularExpression::RegularExpression(const std::set<char> &alphabet) {
     for (const auto &symbol : alphabet) {
         this->alphabet.emplace(symbol);
     }
+    normaliseExpression();
 }
 
 
@@ -57,6 +107,7 @@ std::istream &operator>>(std::istream &in, RegularExpression &regularExpression)
         }
         regularExpression.expression_in_rpn.push_back(symbol);
     }
+    regularExpression.normaliseExpression();
     return in;
 }
 
@@ -65,12 +116,7 @@ std::ostream &operator<<(std::ostream &out, const RegularExpression &regularExpr
     return out;
 }
 
-void RegularExpression::parseExpression() {
-    std::stack<char> stack;
-}
-
 int64_t RegularExpression::findMaxPrefix(char symbol) {
-    // if max_amount == -1 -> INF
     int64_t max_amount = -2;
     return max_amount;
 }
@@ -79,6 +125,6 @@ int64_t RegularExpression::findMaxPrefix(char symbol) {
 int main() {
     RegularExpression r;
     std::cin >> r;
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << r << std::endl;
     return 0;
 }
