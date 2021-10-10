@@ -3,8 +3,8 @@
 
 int main() {
     RegularExpression r;
-    std::cin >> r;
-    std::cout << r << std::endl;
+    r.setExpressionInRpn("aaab.c+*.b.*.");
+    std::cout << r << std::endl << "Enter the letter: ";
     char letter;
     std::cin >> letter;
     auto ans = r.findMaxPrefix(letter);

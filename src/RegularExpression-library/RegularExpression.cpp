@@ -138,6 +138,16 @@ RegularExpression::RegularExpression(const std::set<char> &alphabet) {
     normaliseExpression();
 }
 
+void RegularExpression::setExpressionInRpn(const std::string &given_expression) {
+    for (const auto& symbol : given_expression) {
+        if (symbol == ' ') continue;
+        if (!isSymbolInAlphabet(symbol))
+            throw std::invalid_argument("Regular expression has a symbol which does not exist in the alphabet");
+        expression_in_rpn += symbol;
+    }
+    normaliseExpression();
+}
+
 std::istream &operator>>(std::istream &in, RegularExpression &regularExpression) {
     in >> regularExpression.expression_in_rpn;
     char symbol;

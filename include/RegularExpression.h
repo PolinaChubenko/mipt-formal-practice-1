@@ -42,6 +42,7 @@ public:
     explicit RegularExpression(const std::set<char>&);
     ~RegularExpression() = default;
 
+    void setExpressionInRpn(const std::string&);
     friend std::istream& operator >> (std::istream&, RegularExpression&);
     friend std::ostream& operator << (std::ostream&, const RegularExpression&);
 
