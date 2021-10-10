@@ -31,10 +31,10 @@ private:
     };
 private:
     bool isSymbolInAlphabet(char);
-    static void parseOperationWithValenceOne(std::string&, std::stack<std::string>&);
-    static void parseOperationWithValenceTwo(std::string&, std::stack<std::string>&);
-    static void CountMaxPrefForOneValenceOperation(std::string&, std::stack<maxPrefForRegular>&);
-    static void CountMaxPrefForTwoValenceOperation(std::string&, std::stack<maxPrefForRegular>&);
+    static void parseUnivalentOperation(std::string&, std::stack<std::string>&);
+    static void parseBivalentOperation(std::string&, std::stack<std::string>&);
+    static void CountMaxPrefForUnivalentOperation(std::string&, std::stack<maxPrefForRegular>&);
+    static void CountMaxPrefForBivalentOperation(std::string&, std::stack<maxPrefForRegular>&);
     void normaliseExpression();
 public:
     RegularExpression();
@@ -100,7 +100,7 @@ bool RegularExpression::isSymbolInAlphabet(char symbol) {
     return alphabet.find(symbol) != alphabet.end();
 }
 
-void RegularExpression::parseOperationWithValenceOne(std::string &operation,
+void RegularExpression::parseUnivalentOperation(std::string &operation,
                                                             std::stack<std::string> &unprocessed_elements) {
     std::string operand = unprocessed_elements.top();
     unprocessed_elements.pop();
@@ -111,7 +111,7 @@ void RegularExpression::parseOperationWithValenceOne(std::string &operation,
     }
 }
 
-void RegularExpression::parseOperationWithValenceTwo(std::string &operation,
+void RegularExpression::parseBivalentOperation(std::string &operation,
                                                             std::stack<std::string> &unprocessed_elements) {
     std::string right_operand = unprocessed_elements.top();
     unprocessed_elements.pop();
@@ -134,11 +134,13 @@ void RegularExpression::normaliseExpression() {
             int32_t operator_valence = (symbol == '*') ? 1 : 2;
             std::string operation = std::string(1, symbol);
             if (operator_valence == 1) {
-                if (unprocessed_elements.empty()) throw std::out_of_range("Expression has incorrect operation");
-                parseOperationWithValenceOne(operation, unprocessed_elements);
+                if (unprocessed_elements.empty())
+                    throw std::out_of_range("Expression has an error in the univalent operator");
+                parseUnivalentOperation(operation, unprocessed_elements);
             } else {
-                if (unprocessed_elements.size() < 2) throw std::out_of_range("Expression has incorrect operation");
-                parseOperationWithValenceTwo(operation, unprocessed_elements);
+                if (unprocessed_elements.size() < 2)
+                    throw std::out_of_range("Expression has an error in the bivalent operator");
+                parseBivalentOperation(operation, unprocessed_elements);
             }
         }
     }
@@ -185,7 +187,7 @@ std::ostream &operator<<(std::ostream &out, const RegularExpression &regularExpr
 }
 
 
-void RegularExpression::CountMaxPrefForOneValenceOperation(std::string &operation,
+void RegularExpression::CountMaxPrefForUnivalentOperation(std::string &operation,
                                                            std::stack<maxPrefForRegular> &unprocessed_elements) {
     maxPrefForRegular operand = unprocessed_elements.top();
     unprocessed_elements.pop();
@@ -193,7 +195,7 @@ void RegularExpression::CountMaxPrefForOneValenceOperation(std::string &operatio
 }
 
 
-void RegularExpression::CountMaxPrefForTwoValenceOperation(std::string &operation,
+void RegularExpression::CountMaxPrefForBivalentOperation(std::string &operation,
                                                            std::stack<maxPrefForRegular> &unprocessed_elements) {
     maxPrefForRegular right_operand = unprocessed_elements.top();
     unprocessed_elements.pop();
@@ -218,9 +220,9 @@ std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
             int32_t operator_valence = (symbol == '*') ? 1 : 2;
             std::string operation = std::string(1, symbol);
             if (operator_valence == 1) {
-                CountMaxPrefForOneValenceOperation(operation, unprocessed_elements);
+                CountMaxPrefForUnivalentOperation(operation, unprocessed_elements);
             } else {
-                CountMaxPrefForTwoValenceOperation(operation, unprocessed_elements);
+                CountMaxPrefForBivalentOperation(operation, unprocessed_elements);
             }
         }
     }
@@ -242,10 +244,9 @@ int main() {
     return 0;
 }
 
-// aaab.c+*.b.*.
-// aa.a.b.aa.+aa..
-// ba*c+.a.
-
-// ab+*
-// ab+c.aba.*.bac.+.+*
-// acb..bab.c.*.ab.ba.+.+*a.
+// aaab.c+*.b.*.                = a(a(ab+c)*b)*              ans=3
+// aa.a.b.aa.+aa..              = (aaab+aa)aa                ans=4
+// ba*c+.a.                     = b(a*+c)a                   ans=0
+// ab+*                         = (a+b)*                     ans=INF
+// ab+c.aba.*.bac.+.+*          = ((a+b)c+a(ba)*(b+ac))*     ans=2
+// acb..bab.c.*.ab.ba.+.+*a.    = (acb+b(abc)*(ab+ba))*a     ans=1
