@@ -10,9 +10,17 @@ int64_t RegularExpression::maxPrefForRegular::getMaxWordLen() const {
     return max_word_len;
 }
 
+void RegularExpression::maxPrefForRegular::setMaxPrefLen(int64_t value) {
+    max_pref_len = value;
+}
+
+void RegularExpression::maxPrefForRegular::setMaxWordLen(int64_t value) {
+    max_word_len = value;
+}
+
 RegularExpression::maxPrefForRegular
-RegularExpression::maxPrefForRegular::parseSummation(RegularExpression::maxPrefForRegular &left_operand,
-                                                     RegularExpression::maxPrefForRegular &right_operand) {
+RegularExpression::maxPrefForRegular::parseSummation(const RegularExpression::maxPrefForRegular &left_operand,
+                                                     const RegularExpression::maxPrefForRegular &right_operand) {
     maxPrefForRegular new_regular_max_pref;
     new_regular_max_pref.max_pref_len = std::max(left_operand.max_pref_len, right_operand.max_pref_len);
     new_regular_max_pref.max_word_len = std::max(left_operand.max_word_len, right_operand.max_word_len);
@@ -21,8 +29,8 @@ RegularExpression::maxPrefForRegular::parseSummation(RegularExpression::maxPrefF
 }
 
 RegularExpression::maxPrefForRegular
-RegularExpression::maxPrefForRegular::parseConcatenation(RegularExpression::maxPrefForRegular &left_operand,
-                                                         RegularExpression::maxPrefForRegular &right_operand) {
+RegularExpression::maxPrefForRegular::parseConcatenation(const RegularExpression::maxPrefForRegular &left_operand,
+                                                         const RegularExpression::maxPrefForRegular &right_operand) {
     maxPrefForRegular new_regular_max_pref;
     new_regular_max_pref.max_pref_len = left_operand.max_word_len != -1 ?
                                         std::max(left_operand.max_pref_len, left_operand.max_word_len + right_operand.max_pref_len) :
@@ -34,7 +42,7 @@ RegularExpression::maxPrefForRegular::parseConcatenation(RegularExpression::maxP
 }
 
 RegularExpression::maxPrefForRegular
-RegularExpression::maxPrefForRegular::parseStar(RegularExpression::maxPrefForRegular &operand) {
+RegularExpression::maxPrefForRegular::parseStar(const RegularExpression::maxPrefForRegular &operand) {
     maxPrefForRegular new_regular_max_pref;
     if (operand.max_word_len > 0) {
         new_regular_max_pref.max_word_len = new_regular_max_pref.max_pref_len = infinity;
@@ -51,11 +59,6 @@ void RegularExpression::maxPrefForRegular::controlInfinity() {
     }
 }
 
-
-
-bool RegularExpression::isSymbolInAlphabet(char symbol) {
-    return alphabet.find(symbol) != alphabet.end();
-}
 
 void RegularExpression::parseUnivalentOperation(std::string &operation,
                                                 std::stack<std::string> &unprocessed_elements) {
@@ -131,11 +134,10 @@ RegularExpression::RegularExpression() {
     alphabet.emplace('c');
 }
 
-RegularExpression::RegularExpression(const std::set<char> &alphabet) {
+void RegularExpression::setAlphabet(const std::set<char> &alphabet) {
     for (const auto &symbol : alphabet) {
         this->alphabet.emplace(symbol);
     }
-    normaliseExpression();
 }
 
 void RegularExpression::setExpressionInRpn(const std::string &given_expression) {
@@ -170,6 +172,22 @@ std::istream &operator>>(std::istream &in, RegularExpression &regularExpression)
 std::ostream &operator<<(std::ostream &out, const RegularExpression &regularExpression) {
     out << regularExpression.expression;
     return out;
+}
+
+std::string RegularExpression::getExpressionInRpn() {
+    return expression_in_rpn;
+}
+
+std::string RegularExpression::getExpression() {
+    return expression;
+}
+
+std::set<char> RegularExpression::getAlphabet() {
+    return alphabet;
+}
+
+bool RegularExpression::isSymbolInAlphabet(char symbol) {
+    return alphabet.find(symbol) != alphabet.end();
 }
 
 std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
