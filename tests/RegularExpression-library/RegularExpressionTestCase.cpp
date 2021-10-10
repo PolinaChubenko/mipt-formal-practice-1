@@ -23,8 +23,8 @@ TEST_F(RegularExpressionTestCase, checkCustomizedAlphabet) {
 
 TEST_F(RegularExpressionTestCase, ErrorsInSettingExpressionInRpn) {
     EXPECT_THROW(mock_object.setExpressionInRpn("ab+*cd"), std::invalid_argument);
-//    EXPECT_THROW(mock_object.setExpressionInRpn("+"), std::invalid_argument);
-//    EXPECT_THROW(mock_object.setExpressionInRpn("*"), std::invalid_argument);
+    EXPECT_THROW(mock_object.setExpressionInRpn("+"), std::invalid_argument);
+    EXPECT_THROW(mock_object.setExpressionInRpn("*"), std::invalid_argument);
     EXPECT_THROW(mock_object.setExpressionInRpn("ab+*c"), std::out_of_range);
 }
 
@@ -45,37 +45,54 @@ TEST_F(RegularExpressionTestCase, GettingExpressionFromStream) {
     EXPECT_THROW(stream >> mock_object, std::invalid_argument);
 }
 
-TEST_F(RegularExpressionTestCase, ParsingSummation1) {
-    maxPrefNode left_operand(1,1), right_operand(0,-1);
-    auto parsed_summation = mock_object.checkParsingSummation(left_operand, right_operand);
+TEST_F(RegularExpressionTestCase, ParsingSummation) {
+    maxPrefNode left_operand1(1,1), right_operand1(0,-1);
+    auto parsed_summation = mock_object.checkParsingSummation(left_operand1, right_operand1);
     EXPECT_EQ(parsed_summation.max_pref_len, 1);
     EXPECT_EQ(parsed_summation.max_word_len, 1);
-}
 
-TEST_F(RegularExpressionTestCase, ParsingSummation2) {
-    maxPrefNode left_operand(100000,100000), right_operand(0,-1);
-    auto parsed_summation = mock_object.checkParsingSummation(left_operand, right_operand);
+    maxPrefNode left_operand2(100000,100000), right_operand2(0,-1);
+    parsed_summation = mock_object.checkParsingSummation(left_operand2, right_operand2);
     EXPECT_EQ(parsed_summation.max_pref_len, 100000);
     EXPECT_EQ(parsed_summation.max_word_len, 100000);
 }
 
 TEST_F(RegularExpressionTestCase, ParsingConcatenation1) {
-    maxPrefNode left_operand(1,1), right_operand(0,-1);
-    auto parsed_summation = mock_object.checkParsingConcatenation(left_operand, right_operand);
+    maxPrefNode left_operand1(1,1), right_operand1(0,-1);
+    auto parsed_summation = mock_object.checkParsingConcatenation(left_operand1, right_operand1);
     EXPECT_EQ(parsed_summation.max_pref_len, 1);
     EXPECT_EQ(parsed_summation.max_word_len, -1);
-}
 
-TEST_F(RegularExpressionTestCase, ParsingConcatenation2) {
-    maxPrefNode left_operand(1,1), right_operand(1,1);
-    auto parsed_summation = mock_object.checkParsingConcatenation(left_operand, right_operand);
+    maxPrefNode left_operand2(1,1), right_operand2(1,1);
+    parsed_summation = mock_object.checkParsingConcatenation(left_operand2, right_operand2);
     EXPECT_EQ(parsed_summation.max_pref_len, 2);
     EXPECT_EQ(parsed_summation.max_word_len, 2);
 }
 
 TEST_F(RegularExpressionTestCase, ParsingStar) {
-    maxPrefNode operand(0,-1);
-    auto parsed_summation = mock_object.checkParsingStar(operand);
+    maxPrefNode operand1(0,-1);
+    auto parsed_summation = mock_object.checkParsingStar(operand1);
     EXPECT_EQ(parsed_summation.max_pref_len, 0);
     EXPECT_EQ(parsed_summation.max_word_len, 0);
+
+    maxPrefNode operand2(1,2);
+    parsed_summation = mock_object.checkParsingStar(operand2);
+    EXPECT_EQ(parsed_summation.max_pref_len, 100000);
+    EXPECT_EQ(parsed_summation.max_word_len, 100000);
+}
+
+TEST_F(RegularExpressionTestCase, FindingMaxPrefix) {
+    mock_object.setExpressionInRpn("ab+c.aba.*.bac.+.+*");
+    EXPECT_EQ(mock_object.findMaxPrefix('a').first, 2);
+
+    mock_object.setExpressionInRpn("acb..bab.c.*.ab.ba.+.+*a.");
+    EXPECT_EQ(mock_object.findMaxPrefix('c').first, 0);
+
+    mock_object.setExpressionInRpn("aa.a.b.aa.+aa..");
+    EXPECT_EQ(mock_object.findMaxPrefix('a').first, 4);
+    EXPECT_EQ(mock_object.findMaxPrefix('a').second, 0);
+
+    mock_object.setExpressionInRpn("ab+*");
+    EXPECT_EQ(mock_object.findMaxPrefix('a').first, 100000);
+    EXPECT_EQ(mock_object.findMaxPrefix('a').second, 1);
 }
