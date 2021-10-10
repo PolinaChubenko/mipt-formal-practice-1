@@ -208,6 +208,8 @@ void RegularExpression::CountMaxPrefForTwoValenceOperation(std::string &operatio
 
 
 std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
+    if (!isalpha(letter)) throw std::invalid_argument("Function accepts only letters");
+    if (!isSymbolInAlphabet(letter)) throw std::invalid_argument("This letter does not exists in the alphabet");
     std::stack<maxPrefForRegular> unprocessed_elements;
     for (char symbol : expression_in_rpn) {
         if (isalpha(symbol)) {
