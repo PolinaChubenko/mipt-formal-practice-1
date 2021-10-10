@@ -26,8 +26,6 @@ protected:
         ~maxPrefForRegular() = default;
         [[nodiscard]] int64_t getMaxPrefLen() const;
         [[nodiscard]] int64_t getMaxWordLen() const;
-        void setMaxPrefLen(int64_t);
-        void setMaxWordLen(int64_t);
         static maxPrefForRegular parseSummation(const maxPrefForRegular&, const maxPrefForRegular&);
         static maxPrefForRegular parseConcatenation(const maxPrefForRegular&, const maxPrefForRegular&);
         static maxPrefForRegular parseStar(const maxPrefForRegular&);

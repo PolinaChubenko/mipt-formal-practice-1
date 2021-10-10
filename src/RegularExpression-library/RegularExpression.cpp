@@ -10,14 +10,6 @@ int64_t RegularExpression::maxPrefForRegular::getMaxWordLen() const {
     return max_word_len;
 }
 
-void RegularExpression::maxPrefForRegular::setMaxPrefLen(int64_t value) {
-    max_pref_len = value;
-}
-
-void RegularExpression::maxPrefForRegular::setMaxWordLen(int64_t value) {
-    max_word_len = value;
-}
-
 RegularExpression::maxPrefForRegular
 RegularExpression::maxPrefForRegular::parseSummation(const RegularExpression::maxPrefForRegular &left_operand,
                                                      const RegularExpression::maxPrefForRegular &right_operand) {
@@ -115,11 +107,11 @@ void RegularExpression::normaliseExpression() {
             std::string operation = std::string(1, symbol);
             if (operator_valence == 1) {
                 if (unprocessed_elements.empty())
-                    throw std::out_of_range("Expression has an error in the univalent operator");
+                    throw std::invalid_argument("Expression has an error in the univalent operator");
                 parseUnivalentOperation(operation, unprocessed_elements);
             } else {
                 if (unprocessed_elements.size() < 2)
-                    throw std::out_of_range("Expression has an error in the bivalent operator");
+                    throw std::invalid_argument("Expression has an error in the bivalent operator");
                 parseBivalentOperation(operation, unprocessed_elements);
             }
         }
@@ -151,17 +143,17 @@ void RegularExpression::setExpressionInRpn(const std::string &given_expression) 
 }
 
 std::istream &operator>>(std::istream &in, RegularExpression &regularExpression) {
-    in >> regularExpression.expression_in_rpn;
+    regularExpression.expression_in_rpn.clear();
     char symbol;
     while (in.read(&symbol, 1)) {
         if (symbol == '\0' || symbol == '\n') {
             break;
         }
-        if (!regularExpression.isSymbolInAlphabet(symbol)) {
-            throw std::invalid_argument("Regular expression has a symbol which does not exist in the alphabet");
-        }
         if (symbol == ' ') {
             continue;
+        }
+        if (!regularExpression.isSymbolInAlphabet(symbol)) {
+            throw std::invalid_argument("Regular expression has a symbol which does not exist in the alphabet");
         }
         regularExpression.expression_in_rpn.push_back(symbol);
     }

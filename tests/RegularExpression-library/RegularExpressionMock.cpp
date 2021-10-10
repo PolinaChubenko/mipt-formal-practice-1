@@ -1,21 +1,19 @@
 #include "RegularExpressionMock.h"
 
-auto RegularExpressionMock::convertPairToMaxPrefForRegular(int64_t pref_len, int64_t word_len) {
-    return maxPrefForRegular(pref_len, word_len);
+maxPrefNode RegularExpressionMock::checkParsingSummation(const maxPrefNode &leftNode, const maxPrefNode &rightNode) {
+    maxPrefForRegular left_operand(leftNode.max_pref_len, leftNode.max_word_len);
+    maxPrefForRegular right_operand(rightNode.max_pref_len, rightNode.max_word_len);
+    auto answer = maxPrefForRegular::parseSummation(left_operand, right_operand);
+    return maxPrefNode(answer.getMaxPrefLen(), answer.getMaxWordLen());
 }
-auto RegularExpressionMock::checkParsingSummation(const maxPrefForRegular& left_operand,
-                                                  const maxPrefForRegular& right_operand) {
-    return maxPrefForRegular::parseSummation(left_operand, right_operand);
+maxPrefNode RegularExpressionMock::checkParsingConcatenation(const maxPrefNode &leftNode, const maxPrefNode &rightNode) {
+    maxPrefForRegular left_operand(leftNode.max_pref_len, leftNode.max_word_len);
+    maxPrefForRegular right_operand(rightNode.max_pref_len, rightNode.max_word_len);
+    auto answer = maxPrefForRegular::parseConcatenation(left_operand, right_operand);
+    return maxPrefNode(answer.getMaxPrefLen(), answer.getMaxWordLen());
 }
-auto RegularExpressionMock::checkParsingConcatenation(const maxPrefForRegular& left_operand,
-                                                      const maxPrefForRegular& right_operand) {
-    return maxPrefForRegular::parseConcatenation(left_operand, right_operand);
-}
-auto RegularExpressionMock::checkParsingStar(const maxPrefForRegular& operand) {
-    return maxPrefForRegular::parseStar(operand);
-}
-bool RegularExpressionMock::isMaxPrefsForRegularsEqual(const maxPrefForRegular& left_operand,
-                                                       const maxPrefForRegular& right_operand) {
-    return left_operand.getMaxWordLen() == right_operand.getMaxWordLen() &&
-           left_operand.getMaxPrefLen() == right_operand.getMaxPrefLen();
+maxPrefNode RegularExpressionMock::checkParsingStar(const maxPrefNode &Node) {
+    maxPrefForRegular operand(Node.max_pref_len, Node.max_word_len);
+    auto answer = maxPrefForRegular::parseStar(operand);
+    return maxPrefNode(answer.getMaxPrefLen(), answer.getMaxWordLen());
 }

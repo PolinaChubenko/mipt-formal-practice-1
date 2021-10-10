@@ -6,7 +6,8 @@ set(SOURCES ${source-files})
 
 message(INFO ${SOURCES})
 
-set(TEST_SOURCES RegularExpressionTestCase.h RegularExpressionTestCase.cpp)
+set(TEST_SOURCES RegularExpressionTestCase.h RegularExpressionTestCase.cpp
+        RegularExpressionMock.h RegularExpressionMock.cpp)
 run_coverage(
         "${TEST_SOURCES}"
         "${SOURCES}"
