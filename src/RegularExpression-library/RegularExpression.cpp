@@ -133,6 +133,7 @@ void RegularExpression::setAlphabet(const std::set<char> &alphabet) {
 }
 
 void RegularExpression::setExpressionInRpn(const std::string &given_expression) {
+    expression_in_rpn.clear();
     for (const auto& symbol : given_expression) {
         if (symbol == ' ') continue;
         if (!isSymbolInAlphabet(symbol))
