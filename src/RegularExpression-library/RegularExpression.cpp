@@ -1,51 +1,6 @@
-#include <iostream>
-#include <algorithm>
-#include <string>
+#include "RegularExpression.h"
 #include <cctype>
-#include <set>
-#include <stack>
 
-
-class RegularExpression {
-private:
-    std::string expression_in_rpn;
-    std::string expression;
-    std::set<char> alphabet = {'1', '.', '+', '*'};
-    static const int64_t infinity = 1e5;
-
-    class maxPrefForRegular {
-    private:
-        int64_t max_pref_len = 0; // len of max prefix = letter^k
-        // (0=no pref of such letter)
-        int64_t max_word_len = -1; // len of max word = letter^k
-        // (-1=no empty word and language has no word letter^k)
-    public:
-        maxPrefForRegular() = default;
-        maxPrefForRegular(int64_t pref, int64_t word) : max_pref_len(pref), max_word_len(word) {}
-        [[nodiscard]] int64_t getMaxPrefLen() const;
-        [[nodiscard]] int64_t getMaxWordLen() const;
-        static maxPrefForRegular parseSummation(maxPrefForRegular&, maxPrefForRegular&);
-        static maxPrefForRegular parseConcatenation(maxPrefForRegular &, maxPrefForRegular &);
-        static maxPrefForRegular parseStar(maxPrefForRegular &);
-        void controlInfinity();
-    };
-private:
-    bool isSymbolInAlphabet(char);
-    static void parseUnivalentOperation(std::string&, std::stack<std::string>&);
-    static void parseBivalentOperation(std::string&, std::stack<std::string>&);
-    static void CountMaxPrefForUnivalentOperation(std::string&, std::stack<maxPrefForRegular>&);
-    static void CountMaxPrefForBivalentOperation(std::string&, std::stack<maxPrefForRegular>&);
-    void normaliseExpression();
-public:
-    RegularExpression();
-    explicit RegularExpression(const std::set<char>&);
-    ~RegularExpression() = default;
-
-    friend std::istream& operator >> (std::istream&, RegularExpression&);
-    friend std::ostream& operator << (std::ostream&, const RegularExpression&);
-
-    std::pair<int64_t, bool> findMaxPrefix(char);
-};
 
 int64_t RegularExpression::maxPrefForRegular::getMaxPrefLen() const {
     return max_pref_len;
@@ -70,10 +25,10 @@ RegularExpression::maxPrefForRegular::parseConcatenation(RegularExpression::maxP
                                                          RegularExpression::maxPrefForRegular &right_operand) {
     maxPrefForRegular new_regular_max_pref;
     new_regular_max_pref.max_pref_len = left_operand.max_word_len != -1 ?
-            std::max(left_operand.max_pref_len, left_operand.max_word_len + right_operand.max_pref_len) :
-            left_operand.max_pref_len;
+                                        std::max(left_operand.max_pref_len, left_operand.max_word_len + right_operand.max_pref_len) :
+                                        left_operand.max_pref_len;
     new_regular_max_pref.max_word_len = left_operand.max_word_len != -1 && right_operand.max_word_len != -1 ?
-                left_operand.max_word_len + right_operand.max_word_len : -1;
+                                        left_operand.max_word_len + right_operand.max_word_len : -1;
     new_regular_max_pref.controlInfinity();
     return new_regular_max_pref;
 }
@@ -96,12 +51,14 @@ void RegularExpression::maxPrefForRegular::controlInfinity() {
     }
 }
 
+
+
 bool RegularExpression::isSymbolInAlphabet(char symbol) {
     return alphabet.find(symbol) != alphabet.end();
 }
 
 void RegularExpression::parseUnivalentOperation(std::string &operation,
-                                                            std::stack<std::string> &unprocessed_elements) {
+                                                std::stack<std::string> &unprocessed_elements) {
     std::string operand = unprocessed_elements.top();
     unprocessed_elements.pop();
     if (operand.size() == 1 || operand[0] == '(') {
@@ -112,7 +69,7 @@ void RegularExpression::parseUnivalentOperation(std::string &operation,
 }
 
 void RegularExpression::parseBivalentOperation(std::string &operation,
-                                                            std::stack<std::string> &unprocessed_elements) {
+                                               std::stack<std::string> &unprocessed_elements) {
     std::string right_operand = unprocessed_elements.top();
     unprocessed_elements.pop();
     std::string left_operand = unprocessed_elements.top();
@@ -122,6 +79,26 @@ void RegularExpression::parseBivalentOperation(std::string &operation,
     }
     else {
         unprocessed_elements.push(left_operand + right_operand);
+    }
+}
+
+void RegularExpression::CountMaxPrefForUnivalentOperation(std::string &operation,
+                                                          std::stack<maxPrefForRegular> &unprocessed_elements) {
+    maxPrefForRegular operand = unprocessed_elements.top();
+    unprocessed_elements.pop();
+    unprocessed_elements.push(maxPrefForRegular::parseStar(operand));
+}
+
+void RegularExpression::CountMaxPrefForBivalentOperation(std::string &operation,
+                                                         std::stack<maxPrefForRegular> &unprocessed_elements) {
+    maxPrefForRegular right_operand = unprocessed_elements.top();
+    unprocessed_elements.pop();
+    maxPrefForRegular left_operand = unprocessed_elements.top();
+    unprocessed_elements.pop();
+    if (operation == "+") {
+        unprocessed_elements.push(maxPrefForRegular::parseSummation(left_operand, right_operand));
+    } else {
+        unprocessed_elements.push(maxPrefForRegular::parseConcatenation(left_operand, right_operand));
     }
 }
 
@@ -161,7 +138,6 @@ RegularExpression::RegularExpression(const std::set<char> &alphabet) {
     normaliseExpression();
 }
 
-
 std::istream &operator>>(std::istream &in, RegularExpression &regularExpression) {
     in >> regularExpression.expression_in_rpn;
     char symbol;
@@ -186,29 +162,6 @@ std::ostream &operator<<(std::ostream &out, const RegularExpression &regularExpr
     return out;
 }
 
-
-void RegularExpression::CountMaxPrefForUnivalentOperation(std::string &operation,
-                                                           std::stack<maxPrefForRegular> &unprocessed_elements) {
-    maxPrefForRegular operand = unprocessed_elements.top();
-    unprocessed_elements.pop();
-    unprocessed_elements.push(maxPrefForRegular::parseStar(operand));
-}
-
-
-void RegularExpression::CountMaxPrefForBivalentOperation(std::string &operation,
-                                                           std::stack<maxPrefForRegular> &unprocessed_elements) {
-    maxPrefForRegular right_operand = unprocessed_elements.top();
-    unprocessed_elements.pop();
-    maxPrefForRegular left_operand = unprocessed_elements.top();
-    unprocessed_elements.pop();
-    if (operation == "+") {
-        unprocessed_elements.push(maxPrefForRegular::parseSummation(left_operand, right_operand));
-    } else {
-        unprocessed_elements.push(maxPrefForRegular::parseConcatenation(left_operand, right_operand));
-    }
-}
-
-
 std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
     if (!isalpha(letter)) throw std::invalid_argument("Function accepts only letters");
     if (!isSymbolInAlphabet(letter)) throw std::invalid_argument("This letter does not exists in the alphabet");
@@ -230,23 +183,3 @@ std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
     int64_t max_pref_answer = std::max(wanted_expression.getMaxPrefLen(), wanted_expression.getMaxWordLen());
     return std::make_pair(max_pref_answer, max_pref_answer != infinity ? 0 : 1);
 }
-
-
-int main() {
-    RegularExpression r;
-    std::cin >> r;
-    std::cout << r << std::endl;
-    char letter;
-    std::cin >> letter;
-    auto ans = r.findMaxPrefix(letter);
-    if (ans.second) std::cout << "INF\n";
-    else std::cout << ans.first << std::endl;
-    return 0;
-}
-
-// aaab.c+*.b.*.                = a(a(ab+c)*b)*              ans=3
-// aa.a.b.aa.+aa..              = (aaab+aa)aa                ans=4
-// ba*c+.a.                     = b(a*+c)a                   ans=0
-// ab+*                         = (a+b)*                     ans=INF
-// ab+c.aba.*.bac.+.+*          = ((a+b)c+a(ba)*(b+ac))*     ans=2
-// acb..bab.c.*.ab.ba.+.+*a.    = (acb+b(abc)*(ab+ba))*a     ans=1
