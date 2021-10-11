@@ -3,7 +3,8 @@
 
 int main() {
     RegularExpression r;
-    r.setExpressionInRpn("aaab.c+*.b.*.");
+    // r.setExpressionInRpn("aaab.c+*.b.*.");
+    std::cin >> r;
     std::cout << r << std::endl << "Enter the letter: ";
     char letter;
     std::cin >> letter;
