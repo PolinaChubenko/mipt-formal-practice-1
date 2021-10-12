@@ -198,7 +198,6 @@ std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
             }
         }
     }
-    maxPrefForRegular wanted_expression = unprocessed_elements.top();
-    int64_t max_pref_answer = std::max(wanted_expression.getMaxPrefLen(), wanted_expression.getMaxWordLen());
+    int64_t max_pref_answer = unprocessed_elements.top().getMaxPrefLen();
     return std::make_pair(max_pref_answer, max_pref_answer != infinity ? 0 : 1);
 }
