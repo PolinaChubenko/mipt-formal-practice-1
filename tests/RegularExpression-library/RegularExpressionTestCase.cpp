@@ -29,7 +29,7 @@ TEST_F(RegularExpressionTestCase, ErrorsInSettingExpressionInRpn) {
 }
 
 TEST_F(RegularExpressionTestCase, NormalisingExpression) {
-    mock_object.setExpressionInRpn("aab+*.");
+    mock_object.setExpressionInRpn("aa  b+ *.");
     EXPECT_EQ(mock_object.getExpressionInRpn(), "aab+*.");
     EXPECT_EQ(mock_object.getExpression(), "a(a+b)*");
 }
@@ -40,6 +40,12 @@ TEST_F(RegularExpressionTestCase, GettingExpressionFromStream) {
     stream >> mock_object;
     EXPECT_EQ(mock_object.getExpression(), "b(a*+c)a");
     EXPECT_NO_THROW(stream << mock_object);
+
+    std::stringstream().swap(stream);
+    stream << "aaab.c+*.b.*.\n";
+    stream >> mock_object;
+    EXPECT_EQ(mock_object.getExpression(), "a(a(ab+c)*b)*");
+
     std::stringstream().swap(stream);
     stream << "ad\0";
     EXPECT_THROW(stream >> mock_object, std::invalid_argument);
@@ -92,7 +98,18 @@ TEST_F(RegularExpressionTestCase, FindingMaxPrefix) {
     EXPECT_EQ(mock_object.findMaxPrefix('a').first, 4);
     EXPECT_EQ(mock_object.findMaxPrefix('a').second, 0);
 
+    mock_object.setExpressionInRpn("1ab.+");
+    EXPECT_EQ(mock_object.findMaxPrefix('a').first, 1);
+    EXPECT_EQ(mock_object.findMaxPrefix('a').second, 0);
+
     mock_object.setExpressionInRpn("ab+*");
     EXPECT_EQ(mock_object.findMaxPrefix('a').first, 100000);
     EXPECT_EQ(mock_object.findMaxPrefix('a').second, 1);
 }
+
+TEST_F(RegularExpressionTestCase, FindingMaxPrefixThrows) {
+    mock_object.setExpressionInRpn("ab+*");
+    EXPECT_THROW(mock_object.findMaxPrefix('5').first, std::invalid_argument);
+    EXPECT_THROW(mock_object.findMaxPrefix('d').first, std::invalid_argument);
+}
+

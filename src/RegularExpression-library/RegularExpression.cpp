@@ -46,8 +46,11 @@ RegularExpression::maxPrefForRegular::parseStar(const RegularExpression::maxPref
 }
 
 void RegularExpression::maxPrefForRegular::controlInfinity() {
-    if (this->max_pref_len >= infinity || this->max_word_len >= infinity) {
+    if (this->max_word_len >= infinity) {
         this->max_pref_len = this->max_word_len = infinity;
+    }
+    if (this->max_pref_len >= infinity) {
+        this->max_pref_len = infinity;
     }
 }
 
