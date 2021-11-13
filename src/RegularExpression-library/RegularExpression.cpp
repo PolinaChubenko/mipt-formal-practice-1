@@ -109,17 +109,21 @@ void RegularExpression::normaliseExpression() {
             int32_t operator_valence = (symbol == '*') ? 1 : 2;
             std::string operation = std::string(1, symbol);
             if (operator_valence == 1) {
-                if (unprocessed_elements.empty())
+                if (unprocessed_elements.empty()) {
                     throw std::invalid_argument("Expression has an error in the univalent operator");
+                }
                 parseUnivalentOperation(operation, unprocessed_elements);
             } else {
-                if (unprocessed_elements.size() < 2)
+                if (unprocessed_elements.size() < 2) {
                     throw std::invalid_argument("Expression has an error in the bivalent operator");
+                }
                 parseBivalentOperation(operation, unprocessed_elements);
             }
         }
     }
-    if (unprocessed_elements.size() > 1) throw std::out_of_range("Expression is incorrect");
+    if (unprocessed_elements.size() > 1) {
+        throw std::out_of_range("Expression is incorrect");
+    }
     expression = unprocessed_elements.top();
 }
 
@@ -129,9 +133,9 @@ RegularExpression::RegularExpression() {
     alphabet.emplace('c');
 }
 
-void RegularExpression::setAlphabet(const std::set<char> &alphabet) {
-    for (const auto &symbol : alphabet) {
-        this->alphabet.emplace(symbol);
+void RegularExpression::setAlphabet(const std::set<char> &set_alphabet) {
+    for (const auto &symbol : set_alphabet) {
+        alphabet.emplace(symbol);
     }
 }
 
@@ -139,8 +143,9 @@ void RegularExpression::setExpressionInRpn(const std::string &given_expression) 
     expression_in_rpn.clear();
     for (const auto& symbol : given_expression) {
         if (symbol == ' ') continue;
-        if (!isSymbolInAlphabet(symbol))
+        if (!isSymbolInAlphabet(symbol)) {
             throw std::invalid_argument("Regular expression has a symbol which does not exist in the alphabet");
+        }
         expression_in_rpn += symbol;
     }
     normaliseExpression();
@@ -150,12 +155,15 @@ std::istream &operator>>(std::istream &in, RegularExpression &regularExpression)
     regularExpression.expression_in_rpn.clear();
     char symbol;
     while (in.read(&symbol, 1)) {
-        if (symbol == '\0' || symbol == '\n')
+        if (symbol == '\0' || symbol == '\n') {
             break;
-        if (symbol == ' ')
+        }
+        if (symbol == ' ') {
             continue;
-        if (!regularExpression.isSymbolInAlphabet(symbol))
+        }
+        if (!regularExpression.isSymbolInAlphabet(symbol)) {
             throw std::invalid_argument("Regular expression has a symbol which does not exist in the alphabet");
+        }
         regularExpression.expression_in_rpn.push_back(symbol);
     }
     regularExpression.normaliseExpression();
@@ -184,14 +192,18 @@ bool RegularExpression::isSymbolInAlphabet(char symbol) {
 }
 
 std::pair<int64_t, bool> RegularExpression::findMaxPrefix(char letter) {
-    if (!isalpha(letter)) throw std::invalid_argument("Function accepts only letters");
-    if (!isSymbolInAlphabet(letter)) throw std::invalid_argument("This letter does not exists in the alphabet");
+    if (!isalpha(letter)) {
+        throw std::invalid_argument("Function accepts only letters");
+    }
+    if (!isSymbolInAlphabet(letter)) {
+        throw std::invalid_argument("This letter does not exists in the alphabet");
+    }
     std::stack<maxPrefForRegular> unprocessed_elements;
     for (char symbol : expression_in_rpn) {
         if (symbol == '1') unprocessed_elements.push(maxPrefForRegular(0,0));
-        else if (isalpha(symbol))
+        else if (isalpha(symbol)) {
             unprocessed_elements.push(symbol == letter ? maxPrefForRegular(1,1) : maxPrefForRegular());
-        else {
+        } else {
             int32_t operator_valence = (symbol == '*') ? 1 : 2;
             std::string operation = std::string(1, symbol);
             if (operator_valence == 1) {
