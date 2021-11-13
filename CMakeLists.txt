@@ -27,23 +27,6 @@ ExternalProject_Add(
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION} -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
 )
 
-if (APPLE)
-
-    set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl@1.1" CACHE INTERNAL "")
-    set(OPENSSL_LIBRARIES "/usr/local/opt/openssl@1.1/lib" CACHE INTERNAL "")
-    ExternalProject_Add(
-            cpr_repo
-            GIT_REPOSITORY https://github.com/akhtyamovpavel/cpr.git
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION} -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DOPENSSL_LIBRARIES=${OPENSSL_LIBRARIES} -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-    )
-else()
-    ExternalProject_Add(
-            cpr_repo
-            GIT_REPOSITORY https://github.com/akhtyamovpavel/cpr.git
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION} -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-    )
-endif()
-
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -69,13 +52,13 @@ function(run_coverage test_sources sources coverage_target target_name coverage_
 
 
     target_link_libraries(
-            ${test_name} gtest_main gtest gmock Threads::Threads Boost::filesystem cpr curl
+            ${test_name} gtest_main gtest gmock Threads::Threads Boost::filesystem curl
     )
 
     setup_target_for_coverage_gcovr(
             ${coverage_target} ${target_name} ${test_name} ${coverage_name}
     )
-    add_dependencies(${test_name} googletest_repo cpr_repo)
+    add_dependencies(${test_name} googletest_repo)
 
     add_dependencies(coverage_report ${coverage_target})
 endfunction()
@@ -92,5 +75,5 @@ add_subdirectory(tests)
 #COMMANDS
 #cmake -DCMAKE_BUILD_TYPE=Debug ..
 #make -j4
-#make coverage_report - запуск покрытия тестами
+#make coverage_report
 
