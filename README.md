@@ -1,5 +1,5 @@
-![Gtests](./tests/Googletest.svg) ![code coverage 100%](./tests/code_cov.svg)
 # Practical task on regular expressions in reverse Polish notation
+![Gtests](./tests/Googletest.svg) ![code coverage 100%](./tests/code_cov.svg)
 ### Задание (вариант 18):
 Даны регулярное выражение в обратной польской записи R и буква x. Найти максимальное k, такое что в языке L есть слова, начинающиеся с x^k.
 
